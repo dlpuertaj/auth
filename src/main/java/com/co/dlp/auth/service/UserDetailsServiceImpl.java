@@ -1,11 +1,7 @@
 package com.co.dlp.auth.service;
 
-import com.co.dlp.auth.controller.UserController;
 import com.co.dlp.auth.model.User;
 import com.co.dlp.auth.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,11 +10,11 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class UserDetailServiceImpl implements UserDetailsService {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+public class UserDetailsServiceImpl implements UserDetailsService {
+
     private final UserRepository userRepository;
 
-    public UserDetailServiceImpl(UserRepository userRepository) {
+    public UserDetailsServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -37,4 +33,5 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 .roles("USER") // Adjust roles as needed
                 .build();
     }
+
 }
