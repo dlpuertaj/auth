@@ -20,6 +20,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -33,22 +35,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/register").permitAll()
-                        .requestMatchers("/api/login").permitAll()
-                        .anyRequest().authenticated())
-                .formLogin(login -> login
-                        .loginProcessingUrl("/api/login").permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/api/logout")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
-                //.httpBasic(httpBasic -> {});
+                .cors(withDefaults()) // Apply CORS
+                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for testing
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         return http.build();
     }

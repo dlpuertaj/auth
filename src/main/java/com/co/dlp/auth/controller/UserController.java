@@ -21,6 +21,7 @@ import java.util.Map;
 public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
+    public static final String MESSAGE = "message";
 
     @Autowired
     private UserService userService;
@@ -38,14 +39,21 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
+    public ResponseEntity<UserResponse> login(@RequestBody Map<String, String> requestBody , HttpServletRequest request) {
+        String username = requestBody.get("username");
+        String password = requestBody.get("password");
 
-        if(session != null)
-            return ResponseEntity.ok().body(Map.of("message", "Login successful"));
+
+        boolean isAuthenticated = userService.authenticate(username, password);
+
+        if(isAuthenticated){
+            HttpSession session = request.getSession();
+            session.setAttribute("username", username);
+            return ResponseEntity.ok().body(new UserResponse(true, "Login successful"));
+        }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message","Login Failed"));
+                .body(new UserResponse(false, "Invalid credentials"));
     }
 
     @PostMapping("/logout")
@@ -55,7 +63,7 @@ public class UserController {
         if (session != null)
             session.invalidate();
 
-        return ResponseEntity.ok().body(Map.of("message", "Logged out"));
+        return ResponseEntity.ok().body(Map.of(MESSAGE, "Logged out"));
     }
 
     @GetMapping("/me")
@@ -63,6 +71,6 @@ public class UserController {
         if (authentication != null)
             return ResponseEntity.ok().body(Map.of("user",authentication.getName()));
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not authenticated"));    }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, "Not authenticated"));    }
 
 }
