@@ -22,33 +22,45 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     public static final String MESSAGE = "message";
+    public final String USERNAME = "username";
+    public final String PASSWORD = "password";
 
     @Autowired
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> registerUser(@RequestParam String username, @RequestParam String password) throws Exception {
+    public ResponseEntity<UserResponse> registerUser(@RequestBody Map<String, String> requestBody) throws Exception {
+        String username = requestBody.get(USERNAME);
+        String password = requestBody.get(PASSWORD);
         log.info("Registering user: {}", username);
+
+        boolean isAuthenticated = userService.authenticate(username, password);
+
+        if(isAuthenticated){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new UserResponse(false, "Username already registered"));
+        }
+
         try{
             User registered = userService.registerUser(username, password);
             return ResponseEntity.ok(
-                    new UserResponse(true,"User registered", registered));
+                    new UserResponse(true,"User registered", registered.getUsername()));
         }catch(Exception e){
-            return ResponseEntity.badRequest().body(new UserResponse(false, e.getMessage()));
+            return ResponseEntity.badRequest().body(new UserResponse(false, e.getMessage(), username));
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@RequestBody Map<String, String> requestBody , HttpServletRequest request) {
-        String username = requestBody.get("username");
-        String password = requestBody.get("password");
+        String username = requestBody.get(USERNAME);
+        String password = requestBody.get(PASSWORD);
 
 
         boolean isAuthenticated = userService.authenticate(username, password);
 
         if(isAuthenticated){
             HttpSession session = request.getSession();
-            session.setAttribute("username", username);
+            session.setAttribute(USERNAME, username);
             return ResponseEntity.ok().body(new UserResponse(true, "Login successful"));
         }
 
