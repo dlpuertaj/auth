@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -28,6 +29,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/register")
     public ResponseEntity<UserResponse> registerUser(@RequestBody Map<String, String> requestBody) throws Exception {
         String username = requestBody.get(USERNAME);
@@ -50,39 +52,12 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody Map<String, String> requestBody , HttpServletRequest request) {
-        String username = requestBody.get(USERNAME);
-        String password = requestBody.get(PASSWORD);
+    @GetMapping("/dashboard")
+    public ResponseEntity<String> dashboard(){
 
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        boolean isAuthenticated = userService.authenticate(username, password);
-
-        if(isAuthenticated){
-            HttpSession session = request.getSession();
-            session.setAttribute(USERNAME, username);
-            return ResponseEntity.ok().body(new UserResponse(true, "Login successful"));
-        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new UserResponse(false, "Invalid credentials"));
+        return ResponseEntity.ok("Welcome, " + username + "!");
     }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response){
-        HttpSession session = request.getSession(false);
-
-        if (session != null)
-            session.invalidate();
-
-        return ResponseEntity.ok().body(Map.of(MESSAGE, "Logged out"));
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication){
-        if (authentication != null)
-            return ResponseEntity.ok().body(Map.of("user",authentication.getName()));
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, "Not authenticated"));    }
 
 }

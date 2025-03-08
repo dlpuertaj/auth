@@ -35,9 +35,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults()) // Apply CORS
-                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for testing
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("api/register", "api/login").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginProcessingUrl("/api/login")
+                        .defaultSuccessUrl("/api/dashboard",true)
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/api/logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessUrl("/api/login"))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
         return http.build();
     }
@@ -56,20 +68,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(List.of(authenticationProvider()));
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
 }
