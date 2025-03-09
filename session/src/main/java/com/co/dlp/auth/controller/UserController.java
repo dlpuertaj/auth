@@ -52,6 +52,18 @@ public class UserController {
         }
     }
 
+    @GetMapping("/check-session")
+    public ResponseEntity<String> checkSession(){
+        log.info("Checking session");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())){
+            return ResponseEntity.ok("Session is active");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is not active");
+        }
+    }
+
     @GetMapping("/dashboard")
     public ResponseEntity<String> dashboard(){
 

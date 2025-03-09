@@ -26,10 +26,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailService;
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailService) {
-        this.userDetailService = userDetailService;
+    public SecurityConfig() {
     }
 
     @Bean
@@ -58,7 +56,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Allow requests from this origin
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // Allow these HTTP methods
+        configuration.setAllowedMethods(List.of("*")); // Allow these HTTP methods
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowCredentials(true); // Allow credentials (e.g., cookies)
 
