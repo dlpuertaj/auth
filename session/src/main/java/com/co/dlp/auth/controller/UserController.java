@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,36 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+
+
+    @PostMapping("/login")
+    public ResponseEntity<UserResponse> login(@RequestBody Map<String, String> requestBody){
+        String username = requestBody.get(USERNAME);
+        String password = requestBody.get(PASSWORD);
+        log.info("Logging in user: {}", username);
+
+        try{
+
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            log.info("Authentication successful for user: {}, authorities: {}",
+                    username, authentication.getAuthorities());
+
+            return ResponseEntity.ok(new UserResponse(true, "Login successful", username));
+        }catch(Exception e){
+            log.error("Error logging in user: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserResponse(false, "Invalid credentials", username));
+        }
+        
+    }
+
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/register")
     public ResponseEntity<UserResponse> registerUser(@RequestBody Map<String, String> requestBody) throws Exception {
@@ -44,6 +76,7 @@ public class UserController {
         }
 
         try{
+
             User registered = userService.registerUser(username, password);
             return ResponseEntity.ok(
                     new UserResponse(true,"User registered", registered.getUsername()));
@@ -58,9 +91,25 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())){
+            log.info("Session is Active");
             return ResponseEntity.ok("Session is active");
         } else {
+            log.info("Session is not active");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is not active");
+        }
+    }
+
+    @GetMapping("/test-session")
+    public ResponseEntity<String> testSession() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Test session - Auth: {}, Principal: {}", auth, auth != null ? auth.getPrincipal() : "null");
+
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            log.info("Session is Active");
+            return ResponseEntity.ok("Session active for: " + auth.getName());
+        } else {
+            log.info("Session is not active");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No active session");
         }
     }
 
