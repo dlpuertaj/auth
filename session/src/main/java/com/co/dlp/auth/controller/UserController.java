@@ -53,10 +53,10 @@ public class UserController {
             log.info("Authentication successful for user: {}, authorities: {}",
                     username, authentication.getAuthorities());
 
-            return ResponseEntity.ok(new UserResponse(true, "Login successful", username));
+            return ResponseEntity.ok(new UserResponse("Login successful"));
         }catch(Exception e){
             log.error("Error logging in user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserResponse(false, "Invalid credentials", username));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserResponse("Invalid credentials"));
         }
         
     }
@@ -72,16 +72,16 @@ public class UserController {
 
         if(isAuthenticated){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new UserResponse(false, "Username already registered"));
+                    .body(new UserResponse("Username already registered"));
         }
 
         try{
 
             User registered = userService.registerUser(username, password);
             return ResponseEntity.ok(
-                    new UserResponse(true,"User registered", registered.getUsername()));
+                    new UserResponse("User registered"));
         }catch(Exception e){
-            return ResponseEntity.badRequest().body(new UserResponse(false, e.getMessage(), username));
+            return ResponseEntity.badRequest().body(new UserResponse(e.getMessage()));
         }
     }
 
