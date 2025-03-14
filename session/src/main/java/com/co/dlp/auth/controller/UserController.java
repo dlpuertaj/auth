@@ -25,16 +25,19 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     public static final String MESSAGE = "message";
-    public final String USERNAME = "username";
-    public final String PASSWORD = "password";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
+
+
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-
+    public UserController(UserService userService, AuthenticationManager authenticationManager){
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@RequestBody Map<String, String> requestBody){
