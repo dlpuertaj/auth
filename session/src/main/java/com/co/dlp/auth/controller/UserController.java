@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody Map<String, String> requestBody){
+    public ResponseEntity<?> login(HttpServletRequest request, @RequestBody Map<String, String> requestBody){
         String username = requestBody.get(USERNAME);
         String password = requestBody.get(PASSWORD);
         log.info("Logging in user: {}", username);
@@ -56,7 +56,10 @@ public class UserController {
             log.info("Authentication successful for user: {}, authorities: {}",
                     username, authentication.getAuthorities());
 
-            return ResponseEntity.ok(new UserResponse("Login successful"));
+            request.getSession(true);
+
+            return ResponseEntity.ok().build();
+
         }catch(Exception e){
             log.error("Error logging in user: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UserResponse("Invalid credentials"));
