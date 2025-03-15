@@ -53,12 +53,13 @@ public class UserController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+            log.info("Session created: ID={}", session.getId());
             log.info("Authentication successful for user: {}, authorities: {}",
                     username, authentication.getAuthorities());
 
-            request.getSession(true);
-
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok().body("Login successful, session ID: " + session.getId());
 
         }catch(Exception e){
             log.error("Error logging in user: {}", e.getMessage());
@@ -84,25 +85,30 @@ public class UserController {
         try{
 
             User registered = userService.registerUser(username, password);
+
             return ResponseEntity.ok(
-                    new UserResponse("User registered"));
+                    new UserResponse("User registered " + registered.getUsername()));
         }catch(Exception e){
             return ResponseEntity.badRequest().body(new UserResponse(e.getMessage()));
         }
     }
 
     @GetMapping("/check-session")
-    public ResponseEntity<String> checkSession(){
-        log.info("Checking session");
+    public ResponseEntity<?> checkSession(HttpSession session){
+        log.info("Checking session. ID: {}", session.getId());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())){
-            log.info("Session is Active");
-            return ResponseEntity.ok("Session is active");
-        } else {
-            log.info("Session is not active");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session is not active");
+        log.info("Session ID: {}",session.getId());
+        log.info("Session Creation Time: {}",session.getCreationTime());
+        log.info("Session Max Inactive Interval: {}",session.getMaxInactiveInterval());
+
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            log.warn("Unauthorized session check attempt.");
+            return ResponseEntity.status(403).body("Session is invalid or expired");
         }
+
+        long sessionExpiryTime = session.getLastAccessedTime() + (session.getMaxInactiveInterval() * 1000L);
+        return ResponseEntity.ok("Session active for user: " + auth.getName() + ". Expires at: " + sessionExpiryTime);
     }
 
     @GetMapping("/test-session")

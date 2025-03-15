@@ -33,8 +33,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/register", "/api/login").permitAll()
-                        .requestMatchers("/api/check-session", "/api/dashboard").permitAll()
-                        .requestMatchers("/api/test-session", "/api/logout").permitAll()
+                        .requestMatchers("/api/check-session", "/api/dashboard").authenticated()
+                        .requestMatchers("/api/test-session", "/api/logout").authenticated()
                         .anyRequest().authenticated())
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/api/logout", "GET"))
@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .logoutSuccessUrl("/api/login"))
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+                        session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
 
         return http.build();
     }
@@ -54,6 +54,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Set-Cookie"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
