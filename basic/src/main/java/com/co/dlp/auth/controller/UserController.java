@@ -24,7 +24,7 @@ public class UserController {
         try{
             User registered = userService.registerUser(username, password);
             return ResponseEntity.ok(
-                    new UserResponse(true,"User registered", registered));
+                    new UserResponse(true,"User registered", registered.getUsername()));
         }catch(Exception e){
             return ResponseEntity.badRequest().body(new UserResponse(false, e.getMessage()));
         }
