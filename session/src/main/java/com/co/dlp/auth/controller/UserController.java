@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -109,20 +110,6 @@ public class UserController {
 
         long sessionExpiryTime = session.getLastAccessedTime() + (session.getMaxInactiveInterval() * 1000L);
         return ResponseEntity.ok("Session active for user: " + auth.getName() + ". Expires at: " + sessionExpiryTime);
-    }
-
-    @GetMapping("/test-session")
-    public ResponseEntity<String> testSession() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Test session - Auth: {}, Principal: {}", auth, auth != null ? auth.getPrincipal() : "null");
-
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            log.info("Session is Active");
-            return ResponseEntity.ok("Session active for: " + auth.getName());
-        } else {
-            log.info("Session is not active");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No active session");
-        }
     }
 
     @GetMapping("/dashboard")
