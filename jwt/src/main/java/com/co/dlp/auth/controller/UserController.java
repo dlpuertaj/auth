@@ -74,7 +74,6 @@ public class UserController {
 
         String jwtToken = jwtUtils.generateTokenFromUsername(user);
 
-
         LoginResponse response =
                 new LoginResponse(user.getUsername(), jwtToken);
 
@@ -154,11 +153,9 @@ public class UserController {
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<String> dashboard(){
+    public String dashboard(){
 
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        return ResponseEntity.ok("Welcome, " + username + "!");
+        return "The Dashboard";
     }
 
 }
