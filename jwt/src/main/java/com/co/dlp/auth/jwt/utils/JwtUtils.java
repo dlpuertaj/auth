@@ -35,7 +35,7 @@ public class JwtUtils {
         return null;
     }
 
-    public String generateTokenFromUsername(User user){
+    public String generateTokenFromUsername(UserDetails user){
         String username = user.getUsername();
 
         return Jwts.builder()

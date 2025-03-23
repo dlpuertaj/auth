@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,12 +71,12 @@ public class UserController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        User user = (User) authentication.getPrincipal();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        String jwtToken = jwtUtils.generateTokenFromUsername(user);
+        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
         LoginResponse response =
-                new LoginResponse(user.getUsername(), jwtToken);
+                new LoginResponse(userDetails.getUsername(), jwtToken);
 
         return ResponseEntity.ok(response);
     }
